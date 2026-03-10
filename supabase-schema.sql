@@ -28,6 +28,8 @@ CREATE TABLE users (
   added_by UUID REFERENCES users(id),
   blocked_reason TEXT,
   blocked_at TIMESTAMP WITH TIME ZONE,
+  badge_override TEXT,
+  can_see_anonymous BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

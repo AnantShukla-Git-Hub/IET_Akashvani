@@ -2,6 +2,9 @@
 
 export const ALLOWED_EMAIL_DOMAIN = '@ietlucknow.ac.in';
 
+// Owner email (GOD MODE access)
+export const OWNER_EMAIL = 'anantshukla836@gmail.com';
+
 // Academic year starts in August
 export const ACADEMIC_YEAR_START_MONTH = 8;
 
