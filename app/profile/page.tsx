@@ -4,45 +4,56 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
+import { formatYearBranch } from '@/lib/utils';
+
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [postsCount, setPostsCount] = useState(0);
 
   useEffect(() => {
-    const getProfile = async () => {
-      try {
-        // Get current user
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (!authUser) {
-          window.location.href = '/';
-          return;
-        }
-
-        setUser(authUser);
-
-        // Get user profile from database
-        const { data: userProfile, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', authUser.email)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-        } else {
-          setProfile(userProfile);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     getProfile();
   }, []);
+
+  const getProfile = async () => {
+    try {
+      // Get current user
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (!authUser) {
+        window.location.href = '/';
+        return;
+      }
+
+      setUser(authUser);
+
+      // Get user profile from database
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', authUser.email)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        setProfile(userProfile);
+        
+        // Get posts count
+        const { count } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userProfile.id);
+        
+        setPostsCount(count || 0);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -115,20 +126,14 @@ export default function ProfilePage() {
           </div>
 
           {/* Academic Info */}
-          {profile?.branch && (
+          {(profile?.branch || profile?.year) && (
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4">
               <h2 className="text-lg font-semibold mb-3 text-orange-500">Academic Information</h2>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-400">Branch</p>
-                  <p className="text-white">{profile.branch}</p>
+                  <p className="text-xs text-gray-400">Year • Branch</p>
+                  <p className="text-white">{formatYearBranch(profile.year, profile.branch)}</p>
                 </div>
-                {profile.year && (
-                  <div>
-                    <p className="text-xs text-gray-400">Current Year</p>
-                    <p className="text-white">{profile.year}{['st', 'nd', 'rd', 'th'][profile.year - 1]} Year</p>
-                  </div>
-                )}
                 {profile.batch_year && (
                   <div>
                     <p className="text-xs text-gray-400">Batch</p>
@@ -143,6 +148,25 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+
+          {/* Stats */}
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4">
+            <h2 className="text-lg font-semibold mb-3 text-orange-500">Activity</h2>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-orange-500">{postsCount}</p>
+                <p className="text-xs text-gray-400">Posts</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-400">-</p>
+                <p className="text-xs text-gray-400">Likes</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-400">-</p>
+                <p className="text-xs text-gray-400">Comments</p>
+              </div>
+            </div>
+          </div>
 
           {/* Account Status */}
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4">

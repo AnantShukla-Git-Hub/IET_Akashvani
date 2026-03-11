@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { canPerformAction, getPostAuthorName, getPostAuthorAvatar, getPostAuthorBranch, getUserBadge, getBadgeColor, isOwnerUser } from '@/lib/accessControl';
 import { timeAgo, formatCount, compressImage } from '@/lib/utils';
@@ -249,6 +250,15 @@ export default function FeedPage() {
                 {getUserBadge(user)}
               </span>
             )}
+            {isOwnerUser(user) && (
+              <Link
+                href="/admin/dashboard"
+                className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-medium"
+                title="Admin Panel"
+              >
+                Admin
+              </Link>
+            )}
             <img
               src={user?.profile_pic_url}
               alt={user?.name}
@@ -362,26 +372,26 @@ export default function FeedPage() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-[#2a2a2a]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex justify-around">
-          <button className="flex flex-col items-center gap-1 text-orange-500">
+          <Link href="/feed" className="flex flex-col items-center gap-1 text-orange-500">
             <span className="text-2xl">🏠</span>
             <span className="text-xs font-medium">Feed</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
+          </Link>
+          <Link href="/rooms" className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
             <span className="text-2xl">💬</span>
             <span className="text-xs">Rooms</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
+          </Link>
+          <Link href="/achievements" className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
             <span className="text-2xl">🏆</span>
             <span className="text-xs">Achievements</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
+          </Link>
+          <Link href="/announcements" className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
             <span className="text-2xl">📢</span>
             <span className="text-xs">Announcements</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
+          </Link>
+          <Link href="/profile" className="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-300">
             <span className="text-2xl">👤</span>
             <span className="text-xs">Profile</span>
-          </button>
+          </Link>
         </div>
       </nav>
     </div>
