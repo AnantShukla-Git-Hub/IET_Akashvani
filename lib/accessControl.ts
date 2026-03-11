@@ -28,16 +28,22 @@ export interface AccessPermissions {
 }
 
 /**
- * Check if user is the Owner (GOD MODE)
+ * Check if email is the Owner (GOD MODE)
  * Owner = anantshukla836@gmail.com
- * Owner has UNLIMITED access to everything
  */
-export function isOwner(user: any): boolean {
+export function isOwner(email: string): boolean {
+  if (!email) return false;
+  return email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+}
+
+/**
+ * Check if user object is the Owner
+ */
+export function isOwnerUser(user: any): boolean {
   if (!user) return false;
   
   // Check by email (primary check)
-  const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL || 'anantshukla836@gmail.com';
-  if (user.email === ownerEmail) return true;
+  if (user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) return true;
   
   // Check by role
   if (user.role === 'owner') return true;
@@ -49,31 +55,12 @@ export function isOwner(user: any): boolean {
 }
 
 /**
- * Check if user has access to something
- * OWNER ALWAYS RETURNS TRUE
- */
-export function hasAccess(user: any): boolean {
-  // OWNER = GOD MODE - Always has access
-  if (isOwner(user)) return true;
-  
-  // Banned users have no access
-  if (user?.is_banned) return false;
-  
-  // Everyone else has basic access
-  return true;
-}
-
-/**
  * Check if user can see anonymous post identities
  * ONLY OWNER can see real identity
  * Everyone else (including Director/Gold badge) sees "Anonymous IETian"
  */
-export function canSeeAnonymousIdentity(user: any): boolean {
-  // ONLY OWNER can see anonymous identities
-  if (isOwner(user)) return true;
-  
-  // Everyone else (including Director/Gold badge) CANNOT see
-  return false;
+export function canSeeAnonymousIdentity(email: string): boolean {
+  return isOwner(email); // ONLY owner, nobody else
 }
 
 /**
@@ -81,12 +68,15 @@ export function canSeeAnonymousIdentity(user: any): boolean {
  * OWNER can enter ALL rooms
  * Director/Gold badge CANNOT enter private branch/year rooms
  */
-export function canEnterRoom(user: any, room: any): boolean {
+export function canEnterRoom(userEmail: string, room: any, user?: any): boolean {
   // OWNER can enter EVERY room
-  if (isOwner(user)) return true;
+  if (isOwner(userEmail)) return true;
+  
+  // Need user object for further checks
+  if (!user) return false;
   
   // Banned users can't enter any room
-  if (user?.is_banned) return false;
+  if (user.is_banned) return false;
 
   // Cross-branch rooms - everyone can access
   if (room.is_cross_branch || room.type === 'cross-branch') return true;
@@ -115,12 +105,30 @@ export function canEnterRoom(user: any, room: any): boolean {
 }
 
 /**
+ * Check if user has access to something
+ * OWNER ALWAYS RETURNS TRUE
+ */
+export function hasAccess(userEmail: string, user?: any): boolean {
+  // OWNER = GOD MODE - Always has access
+  if (isOwner(userEmail)) return true;
+  
+  // Need user object for further checks
+  if (!user) return true; // Default allow if no user object
+  
+  // Banned users have no access
+  if (user.is_banned) return false;
+  
+  // Everyone else has basic access
+  return true;
+}
+
+/**
  * Check if user can view a post
  * OWNER can view ALL posts
  */
-export function canViewPost(user: any, post: any): boolean {
+export function canViewPost(userEmail: string, post: any, user?: any): boolean {
   // OWNER can view EVERYTHING
-  if (isOwner(user)) return true;
+  if (isOwner(userEmail)) return true;
   
   // Banned users can't view anything
   if (user?.is_banned) return false;
@@ -133,20 +141,18 @@ export function canViewPost(user: any, post: any): boolean {
  * Check if user can moderate content
  * ONLY OWNER can moderate
  */
-export function canModerate(user: any): boolean {
+export function canModerate(userEmail: string): boolean {
   // ONLY OWNER can moderate
-  if (isOwner(user)) return true;
-  
-  return false;
+  return isOwner(userEmail);
 }
 
 /**
- * Get permissions based on access level
+ * Get permissions based on user
  * Owner bypasses all restrictions
  */
 export function getPermissions(user: any): AccessPermissions {
   // OWNER = GOD MODE - Can do EVERYTHING
-  if (isOwner(user)) {
+  if (isOwnerUser(user)) {
     return {
       canView: true,
       canPost: true,
@@ -277,7 +283,7 @@ export function canPerformAction(
   action: keyof AccessPermissions
 ): boolean {
   // OWNER can do EVERYTHING
-  if (isOwner(user)) return true;
+  if (isOwnerUser(user)) return true;
   
   // Banned users can't do anything
   if (user?.is_banned) return false;
@@ -289,12 +295,10 @@ export function canPerformAction(
 
 /**
  * Check if user can access a specific room
- * Owner can access ALL rooms
- * Regular users can only access their year/branch rooms + cross-branch
- * Gold badge holders can access cross-branch but NOT other year/branch rooms
  */
 export function canAccessRoom(user: any, room: any): boolean {
-  return canEnterRoom(user, room);
+  if (!user) return false;
+  return canEnterRoom(user.email, room, user);
 }
 
 /**
@@ -302,7 +306,7 @@ export function canAccessRoom(user: any, room: any): boolean {
  * Owner badge is ABOVE all other badges
  */
 export function getUserBadge(user: any): string | null {
-  if (isOwner(user)) return 'OWNER'; // Highest badge - above all
+  if (isOwnerUser(user)) return 'OWNER'; // Highest badge - above all
   if (user?.is_banned) return 'BLOCKED';
   if (user?.is_special_user) return user.special_user_role;
   if (user?.is_alumni) return 'Alumni';
@@ -346,7 +350,7 @@ export function getPostAuthorName(post: any, currentUser: any): string {
 
   // Anonymous post
   // ONLY Owner sees real identity
-  if (canSeeAnonymousIdentity(currentUser)) {
+  if (canSeeAnonymousIdentity(currentUser?.email)) {
     return `${post.user?.name} (Anonymous)`;
   }
 
@@ -366,10 +370,29 @@ export function getPostAuthorAvatar(post: any, currentUser: any): string {
 
   // Anonymous post
   // ONLY Owner sees real avatar
-  if (canSeeAnonymousIdentity(currentUser)) {
+  if (canSeeAnonymousIdentity(currentUser?.email)) {
     return post.user?.profile_pic_url || '/default-avatar.png';
   }
 
   // Everyone else sees generic anonymous avatar
   return '/anonymous-avatar.png';
+}
+
+/**
+ * Get post author branch display
+ * For anonymous posts, show branch but not year
+ */
+export function getPostAuthorBranch(post: any, currentUser: any): string {
+  // Owner sees everything
+  if (canSeeAnonymousIdentity(currentUser?.email)) {
+    return `${post.user?.year}${['st', 'nd', 'rd', 'th'][post.user?.year - 1] || 'th'} Year ${post.user?.branch}`;
+  }
+
+  // Anonymous - show only branch
+  if (post.is_anonymous) {
+    return post.user?.branch || 'IET Student';
+  }
+
+  // Regular post - show year + branch
+  return `${post.user?.year}${['st', 'nd', 'rd', 'th'][post.user?.year - 1] || 'th'} Year ${post.user?.branch}`;
 }

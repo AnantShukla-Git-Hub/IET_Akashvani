@@ -1,28 +1,23 @@
-import { BRANCH_CODES } from './constants';
+import { BRANCH_CODES } from './studentData';
 
 /**
  * IET Lucknow Roll Number Parser
  * 
  * Format: 2500520100112 (13 digits)
- * - Position 0-1: Year admitted (25 = 2025)
- * - Position 2-4: College code (005)
- * - Position 7: Branch code (NEEDS VERIFICATION - see note below)
+ * - Position 0-1: Year (25 = 2025)
+ * - Position 2-10: 9-digit branch code
  * - Position 11-12: Class roll number
  * 
- * IMPORTANT - BRANCH CODE POSITION VERIFICATION NEEDED:
- * Current implementation uses position 7 for branch code.
- * Example: 2500520100112
- *          Position 7 = 1 (CSE Self Finance)
- * 
- * However, position needs final confirmation from Anant.
- * Please test with a CSE Regular student roll (branch code should be 0).
- * If position 7 is wrong, change BRANCH_CODE_POSITION constant below.
- * 
- * Possible positions: 7, 8, or 10
+ * Branch codes (middle 9 digits):
+ * - 005200000 = Civil Engineering (CE)
+ * - 005201000 = CS Regular (CSR)
+ * - 005201001 = CS Self Finance (CSSF)
+ * - 005215200 = CS AI (CSAI)
+ * - 005203100 = ECE
+ * - 005202000 = EE
+ * - 005204000 = ME
+ * - 005205100 = Chemical Engineering (CHE)
  */
-
-// CONFIGURABLE: Change this if branch code position is different
-const BRANCH_CODE_POSITION = 7;
 
 export interface ParsedRollNumber {
   isValid: boolean;
@@ -37,8 +32,6 @@ export interface ParsedRollNumber {
 /**
  * Get current academic year
  * Academic year starts in August
- * Example: If current date is July 2025 → 2024-25 academic year
- *          If current date is August 2025 → 2025-26 academic year
  */
 export function getCurrentAcademicYear(): number {
   const now = new Date();
@@ -55,8 +48,6 @@ export function getCurrentAcademicYear(): number {
 
 /**
  * Calculate current study year based on admission year
- * Example: Admitted in 2025, current academic year 2025-26 → 1st year
- *          Admitted in 2025, current academic year 2026-27 → 2nd year
  */
 export function calculateStudyYear(admissionYear: number): number {
   const currentAcademicYear = getCurrentAcademicYear();
@@ -110,8 +101,8 @@ export function parseRollNumber(rollNumber: string): ParsedRollNumber {
     // Calculate current study year
     const currentYear = calculateStudyYear(admissionYear);
     
-    // Extract branch code (position configurable - see top of file)
-    const branchCode = cleanRollNumber.charAt(BRANCH_CODE_POSITION);
+    // Extract branch code (position 2-10, 9 digits)
+    const branchCode = cleanRollNumber.substring(2, 11);
     const branch = BRANCH_CODES[branchCode];
     
     if (!branch) {
@@ -122,7 +113,7 @@ export function parseRollNumber(rollNumber: string): ParsedRollNumber {
         branch: null,
         branchCode,
         classRollNumber: null,
-        error: `Unknown branch code: ${branchCode}. Please contact admin to add this branch.`,
+        error: `Unknown branch code: ${branchCode}. This might be a new branch. Contact admin.`,
       };
     }
     
@@ -152,7 +143,6 @@ export function parseRollNumber(rollNumber: string): ParsedRollNumber {
 
 /**
  * Check if a student should be marked as alumni
- * Alumni = admitted more than 4 years ago
  */
 export function shouldBeAlumni(admissionYear: number): boolean {
   const currentAcademicYear = getCurrentAcademicYear();
@@ -162,13 +152,13 @@ export function shouldBeAlumni(admissionYear: number): boolean {
 
 /**
  * Format roll number for display
- * Example: 2500520100112 → 25-005-201-001-12
+ * Example: 2500520100112 → 25-005201001-12
  */
 export function formatRollNumber(rollNumber: string): string {
   const clean = rollNumber.trim();
   if (clean.length !== 13) return rollNumber;
   
-  return `${clean.substring(0, 2)}-${clean.substring(2, 5)}-${clean.substring(5, 8)}-${clean.substring(8, 11)}-${clean.substring(11, 13)}`;
+  return `${clean.substring(0, 2)}-${clean.substring(2, 11)}-${clean.substring(11, 13)}`;
 }
 
 /**

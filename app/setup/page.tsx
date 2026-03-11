@@ -188,19 +188,23 @@ export default function SetupPage() {
                 {rollNumberInfo?.isValid ? (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-800 font-medium mb-2">
-                      ✓ Valid Roll Number
+                      ✓ Roll Number Detected
                     </p>
                     <div className="text-xs text-green-700 space-y-1">
-                      <p>📅 Admission Year: {rollNumberInfo.admissionYear}</p>
-                      <p>📚 Current Year: {rollNumberInfo.currentYear}{['st', 'nd', 'rd', 'th'][rollNumberInfo.currentYear - 1]}</p>
-                      <p>🎓 Branch: {rollNumberInfo.branch}</p>
-                      <p>🔢 Formatted: {formatRollNumber(formData.rollNumber)}</p>
+                      <p>✅ Branch: {rollNumberInfo.branch}</p>
+                      <p>✅ Batch: {rollNumberInfo.admissionYear}</p>
+                      <p>✅ Current Year: {rollNumberInfo.currentYear}{['st', 'nd', 'rd', 'th'][rollNumberInfo.currentYear - 1]}</p>
+                      <p>✅ Class Roll: {rollNumberInfo.classRollNumber}</p>
+                      <p className="text-gray-600 mt-2">📋 Formatted: {formatRollNumber(formData.rollNumber)}</p>
                     </div>
                   </div>
                 ) : formData.rollNumber.length === 13 ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                     <p className="text-sm text-red-800">
                       ✗ {rollNumberInfo?.error || 'Invalid roll number'}
+                    </p>
+                    <p className="text-xs text-red-600 mt-1">
+                      Please check your roll number and try again.
                     </p>
                   </div>
                 ) : (

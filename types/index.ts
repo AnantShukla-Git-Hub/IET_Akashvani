@@ -141,5 +141,5 @@ export interface Report {
 }
 
 export type BadgeLevel = 'gold' | 'silver' | 'bronze';
-export type Branch = 'CSE Regular' | 'CSE Self Finance' | 'CSE AI' | 'ECE' | 'EE' | 'MECH' | 'CIVIL';
+export type Branch = 'Civil Engineering' | 'CS Regular' | 'CS Self Finance' | 'CS AI' | 'ECE' | 'EE' | 'ME' | 'Chemical Engineering';
 export type Year = 1 | 2 | 3 | 4;

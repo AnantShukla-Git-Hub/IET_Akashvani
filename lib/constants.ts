@@ -48,26 +48,27 @@ export const DESIGNATION_TYPES = {
   CUSTOM: 'Custom',
 } as const;
 
-// Branch codes mapping (position 8 in roll number)
+// Branch codes mapping (9-digit codes from roll number)
 export const BRANCH_CODES: Record<string, string> = {
-  '0': 'CSE Regular',
-  '1': 'CSE Self Finance',
-  '2': 'CSE AI',
-  // Add more as confirmed:
-  // '3': 'ECE',
-  // '4': 'EE',
-  // '5': 'MECH',
-  // '6': 'CIVIL',
+  '005200000': 'Civil Engineering',
+  '005201000': 'CS Regular',
+  '005201001': 'CS Self Finance',
+  '005215200': 'CS AI',
+  '005203100': 'ECE',
+  '005202000': 'EE',
+  '005204000': 'ME',
+  '005205100': 'Chemical Engineering',
 };
 
 export const BRANCHES = [
-  'CSE Regular',
-  'CSE Self Finance',
-  'CSE AI',
+  'Civil Engineering',
+  'CS Regular',
+  'CS Self Finance',
+  'CS AI',
   'ECE',
   'EE',
-  'MECH',
-  'CIVIL',
+  'ME',
+  'Chemical Engineering',
 ] as const;
 
 export const YEARS = [1, 2, 3, 4] as const;

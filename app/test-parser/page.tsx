@@ -13,10 +13,11 @@ export default function TestParserPage() {
   };
 
   const testCases = [
-    { roll: '2500520100112', desc: '2025 batch, CSE Regular, Roll 12' },
-    { roll: '2500520110045', desc: '2025 batch, CSE Self Finance, Roll 45' },
-    { roll: '2500520120023', desc: '2025 batch, CSE AI, Roll 23' },
-    { roll: '2400520100001', desc: '2024 batch, CSE Regular, Roll 01' },
+    { roll: '2500520100112', desc: '2025 batch, CS Regular, Roll 12' },
+    { roll: '2500520100145', desc: '2025 batch, CS Self Finance, Roll 45' },
+    { roll: '2500521520023', desc: '2025 batch, CS AI, Roll 23' },
+    { roll: '2500520000001', desc: '2025 batch, Civil Engineering, Roll 01' },
+    { roll: '2400520100001', desc: '2024 batch, CS Regular, Roll 01 (2nd year)' },
   ];
 
   return (
@@ -107,11 +108,20 @@ export default function TestParserPage() {
             <h3 className="font-bold text-gray-900 mb-3">Roll Number Format</h3>
             <div className="text-sm text-gray-700 space-y-2">
               <p><span className="font-mono bg-white px-2 py-1 rounded">25</span> 00520100112 - Year (2025)</p>
-              <p>25<span className="font-mono bg-white px-2 py-1 rounded">005</span>20100112 - College Code</p>
-              <p>25005<span className="font-mono bg-white px-2 py-1 rounded">201</span>00112 - Unknown</p>
-              <p>25005201<span className="font-mono bg-white px-2 py-1 rounded">0</span>0112 - Branch (0=CSE Regular, 1=CSE SF, 2=CSE AI)</p>
-              <p>250052010<span className="font-mono bg-white px-2 py-1 rounded">01</span>12 - Unknown</p>
+              <p>25<span className="font-mono bg-white px-2 py-1 rounded">005201000</span>12 - Branch Code (9 digits)</p>
+              <p>2500520100<span className="font-mono bg-white px-2 py-1 rounded">1</span>12 - Unknown</p>
               <p>25005201001<span className="font-mono bg-white px-2 py-1 rounded">12</span> - Class Roll Number</p>
+              <div className="mt-3 pt-3 border-t">
+                <p className="font-medium mb-2">Branch Codes:</p>
+                <p className="text-xs">005200000 = Civil Engineering</p>
+                <p className="text-xs">005201000 = CS Regular</p>
+                <p className="text-xs">005201001 = CS Self Finance</p>
+                <p className="text-xs">005215200 = CS AI</p>
+                <p className="text-xs">005203100 = ECE</p>
+                <p className="text-xs">005202000 = EE</p>
+                <p className="text-xs">005204000 = ME</p>
+                <p className="text-xs">005205100 = Chemical Engineering</p>
+              </div>
             </div>
           </div>
         </div>
