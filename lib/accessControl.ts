@@ -378,21 +378,26 @@ export function getPostAuthorAvatar(post: any, currentUser: any): string {
   return '/anonymous-avatar.png';
 }
 
+import { formatYearBranch } from './utils';
+
 /**
  * Get post author branch display
  * For anonymous posts, show branch but not year
  */
 export function getPostAuthorBranch(post: any, currentUser: any): string {
+  const year = post.user?.year;
+  const branch = post.user?.branch;
+
   // Owner sees everything
   if (canSeeAnonymousIdentity(currentUser?.email)) {
-    return `${post.user?.year}${['st', 'nd', 'rd', 'th'][post.user?.year - 1] || 'th'} Year ${post.user?.branch}`;
+    return formatYearBranch(year, branch);
   }
 
   // Anonymous - show only branch
   if (post.is_anonymous) {
-    return post.user?.branch || 'IET Student';
+    return branch || 'IET Student';
   }
 
   // Regular post - show year + branch
-  return `${post.user?.year}${['st', 'nd', 'rd', 'th'][post.user?.year - 1] || 'th'} Year ${post.user?.branch}`;
+  return formatYearBranch(year, branch);
 }

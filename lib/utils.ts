@@ -105,3 +105,33 @@ export function sanitizeHTML(html: string): string {
   div.textContent = html;
   return div.innerHTML;
 }
+
+/**
+ * Get ordinal suffix for a number (1st, 2nd, 3rd, 4th)
+ */
+export function getOrdinal(num: number | null | undefined): string {
+  if (num === null || num === undefined) return '';
+  
+  const j = num % 10;
+  const k = num % 100;
+  
+  if (j === 1 && k !== 11) return `${num}st`;
+  if (j === 2 && k !== 12) return `${num}nd`;
+  if (j === 3 && k !== 13) return `${num}rd`;
+  return `${num}th`;
+}
+
+/**
+ * Format user year and branch display
+ * Examples:
+ * - "1st Year • CS Self Finance"
+ * - "CS Self Finance" (if no year)
+ * - "IET Lucknow" (if no branch)
+ * - "" (if both null)
+ */
+export function formatYearBranch(year: number | null | undefined, branch: string | null | undefined): string {
+  if (!year && !branch) return 'IET Lucknow';
+  if (!year && branch) return branch;
+  if (year && !branch) return `${getOrdinal(year)} Year`;
+  return `${getOrdinal(year)} Year • ${branch}`;
+}
