@@ -2,6 +2,39 @@
 
 Complete step-by-step instructions for setting up Google OAuth with Supabase.
 
+**✨ FEATURE: Force Account Selection**
+- OAuth popup will ALWAYS show account selection screen
+- Users can choose their college email (@ietlucknow.ac.in)
+- Prevents accidental login with personal Gmail
+
+**📋 Quick Reference:** See [OAUTH_CONFIG_CHECKLIST.md](./OAUTH_CONFIG_CHECKLIST.md) for verification checklist
+
+---
+
+## How Force Account Selection Works
+
+When users click "Login with College Email", they will ALWAYS see the Google account selection popup, even if they're already logged into a Google account in their browser.
+
+**Implementation:**
+```typescript
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: `${window.location.origin}/auth/callback`,
+    queryParams: {
+      prompt: 'select_account', // ← This forces account selection
+      access_type: 'offline',
+    },
+  },
+});
+```
+
+**Why this matters:**
+- Students often have multiple Google accounts (personal + college)
+- Without this, Google auto-selects the first logged-in account
+- With `prompt: 'select_account'`, users explicitly choose their @ietlucknow.ac.in email
+- Prevents login failures due to wrong email selection
+
 ---
 
 ## Part 1: Google Cloud Console Setup

@@ -38,6 +38,10 @@ College social platform exclusively for IET Lucknow students. Replaces 47 chaoti
 
 ### 3. Google OAuth Setup
 
+**📚 Complete Documentation:** See [OAUTH_DOCS_INDEX.md](./OAUTH_DOCS_INDEX.md) for all OAuth documentation  
+**📖 Detailed Guide:** See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for complete step-by-step instructions
+
+**Quick Setup:**
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Create a new project or select existing
 3. Enable Google+ API
@@ -47,6 +51,14 @@ College social platform exclusively for IET Lucknow students. Replaces 47 chaoti
    - `https://your-supabase-project.supabase.co/auth/v1/callback`
 6. Copy Client ID and Client Secret
 7. Add these to Supabase (Authentication > Providers > Google)
+
+**✨ Features:**
+- Force account selection (users always choose their email)
+- Domain validation (@ietlucknow.ac.in only)
+- Secure OAuth 2.0 flow
+
+**📋 Verification:** See [OAUTH_CONFIG_CHECKLIST.md](./OAUTH_CONFIG_CHECKLIST.md)  
+**🧪 Testing:** See [TEST_OAUTH_FLOW.md](./TEST_OAUTH_FLOW.md)
 
 ### 4. Environment Variables
 

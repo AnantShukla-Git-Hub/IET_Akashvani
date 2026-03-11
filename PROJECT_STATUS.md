@@ -1,10 +1,30 @@
 # IET Akashvani - Project Status
 
-## Current Status: Week 1-2 Complete ✅
+## Current Status: Week 5-6 Complete ✅
 
-**Date**: March 10, 2026
+**Date**: March 11, 2026
 **Developer**: Anant Shukla (IET Lucknow)
 **Cost So Far**: ₹0
+
+---
+
+## Latest Update: OAuth Force Account Selection ✅
+
+**Date**: March 11, 2026
+
+Added force account selection to Google OAuth login. Users now ALWAYS see the Google account picker, allowing them to explicitly choose their @ietlucknow.ac.in email.
+
+**What Changed:**
+- OAuth now includes `prompt: 'select_account'` parameter
+- Account selection popup appears every time
+- Prevents accidental login with wrong email
+- Better UX for users with multiple Google accounts
+
+**Documentation:**
+- [OAUTH_SETUP.md](./OAUTH_SETUP.md) - Complete setup guide
+- [OAUTH_CONFIG_CHECKLIST.md](./OAUTH_CONFIG_CHECKLIST.md) - Quick verification
+- [TEST_OAUTH_FLOW.md](./TEST_OAUTH_FLOW.md) - Testing guide
+- [OAUTH_FORCE_ACCOUNT_SELECTION.md](./OAUTH_FORCE_ACCOUNT_SELECTION.md) - Implementation details
 
 ---
 

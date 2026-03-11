@@ -199,6 +199,7 @@ ALTER TABLE vibes ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies (basic - will expand later)
 CREATE POLICY "Users can view all profiles" ON users FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert profile" ON users FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
 
 CREATE POLICY "Anyone can view posts" ON posts FOR SELECT USING (true);

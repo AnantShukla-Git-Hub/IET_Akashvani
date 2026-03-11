@@ -13,8 +13,16 @@ export default function LandingPage() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        const email = session.user.email;
+        
+        // Allow owner email always (bypass domain check)
+        if (email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+          window.location.href = '/admin/dashboard';
+          return;
+        }
+        
         // Check if email is allowed
-        if (session.user.email?.endsWith(ALLOWED_EMAIL_DOMAIN)) {
+        if (email?.endsWith(ALLOWED_EMAIL_DOMAIN)) {
           window.location.href = '/setup';
         } else {
           await supabase.auth.signOut();
@@ -30,13 +38,13 @@ export default function LandingPage() {
       setLoading(true);
       setError('');
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
+            prompt: 'select_account', // Force account selection
             access_type: 'offline',
-            prompt: 'consent',
           },
         },
       });

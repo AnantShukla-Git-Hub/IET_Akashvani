@@ -27,6 +27,19 @@ export default function SetupPage() {
       if (session?.user) {
         setUser(session.user);
         setFormData(prev => ({ ...prev, name: session.user.user_metadata.full_name || '' }));
+        
+        // Check if user already has profile (already completed setup)
+        const { data: existingProfile } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', session.user.email)
+          .single();
+        
+        if (existingProfile) {
+          console.log('User already has profile, redirecting to feed');
+          window.location.href = '/feed';
+          return;
+        }
       } else {
         window.location.href = '/';
       }
@@ -47,7 +60,8 @@ export default function SetupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.rollNumber || !formData.profilePic) {
+    // Only validate name and roll number (profile pic is optional)
+    if (!formData.name.trim() || !formData.rollNumber.trim()) {
       alert('Please fill all required fields');
       return;
     }
@@ -63,6 +77,10 @@ export default function SetupPage() {
     try {
       const { admissionYear, currentYear, branch } = rollNumberInfo;
 
+      console.log('Starting user creation...');
+      console.log('User email:', user.email);
+      console.log('Form data:', { name: formData.name, rollNumber: formData.rollNumber });
+
       // Create user in database
       const { data: newUser, error: userError } = await supabase
         .from('users')
@@ -72,19 +90,27 @@ export default function SetupPage() {
           roll_number: formData.rollNumber,
           year: currentYear,
           branch: branch,
-          profile_pic_url: formData.profilePic,
+          profile_pic_url: formData.profilePic || null, // Optional profile pic
           batch_year: admissionYear,
         })
         .select()
         .single();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('Supabase error:', userError);
+        console.error('Error details:', JSON.stringify(userError, null, 2));
+        throw new Error(`Database error: ${userError.message || 'Failed to create user profile'}`);
+      }
+
+      console.log('User created successfully:', newUser);
 
       // Get room assignments and create rooms if needed
+      console.log('Getting room assignments...');
       await getUserRoomAssignments(currentYear, branch);
 
       // If user has designation, create designation request
       if (formData.hasDesignation && formData.designation) {
+        console.log('Creating designation request...');
         const { error: designationError } = await supabase
           .from('designations')
           .insert({
@@ -94,17 +120,27 @@ export default function SetupPage() {
             status: 'pending',
           });
 
-        if (designationError) throw designationError;
+        if (designationError) {
+          console.error('Designation error:', designationError);
+          console.error('Designation error details:', JSON.stringify(designationError, null, 2));
+          throw new Error(`Failed to create designation request: ${designationError.message}`);
+        }
 
         // TODO: Send email to Anant about designation request
         // Will implement with Resend API in Week 9-10
       }
 
+      console.log('Setup complete! Redirecting to feed...');
       // Redirect to feed
       window.location.href = '/feed';
     } catch (error: any) {
       console.error('Setup error:', error);
-      alert('Error setting up profile. Please try again.');
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Unknown error occurred';
+      alert(`Error setting up profile: ${errorMessage}\n\nPlease check the console for details or contact support.`);
       setLoading(false);
     }
   };
@@ -123,7 +159,7 @@ export default function SetupPage() {
           {/* Profile Photo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Profile Photo <span className="text-red-500">*</span>
+              Profile Photo <span className="text-gray-400">(Optional)</span>
             </label>
             <div className="flex items-center gap-4">
               {formData.profilePic && (
