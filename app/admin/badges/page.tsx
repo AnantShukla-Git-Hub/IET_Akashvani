@@ -139,7 +139,9 @@ export default function AdminBadgesPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-yellow-300">⭐ Manage Badges</h1>
-              <p className="text-sm text-gray-400 mt-1">Pending: {designations.length} designations</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Pending: {designations.length} designations
+              </p>
             </div>
             <Link
               href="/admin/dashboard"
@@ -153,68 +155,153 @@ export default function AdminBadgesPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {designations.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">✅</div>
-            <p className="text-xl text-gray-300 mb-2">No pending designations</p>
-            <p className="text-sm text-gray-400">All designation requests have been processed</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {designations.map((designation) => (
-              <div
-                key={designation.id}
-                className="bg-gray-800/50 border border-yellow-500/30 rounded-xl p-6"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-3xl">⭐</span>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">
-                          {designation.designation_title}
-                        </h3>
-                        {designation.unit && (
-                          <p className="text-sm text-gray-400">{designation.unit}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p className="text-xs text-gray-400">Requested by</p>
-                        <p className="text-sm text-white">{designation.user.name}</p>
-                        <p className="text-xs text-gray-400">{designation.user.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Serial ID</p>
-                        <p className="text-sm font-mono text-white">{designation.user.serial_id}</p>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-gray-500">
-                      Requested: {new Date(designation.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleApprove(designation.id, designation.user_id)}
-                      className="px-4 py-2 bg-green-500/20 border border-green-500 text-green-200 rounded-lg hover:bg-green-500/30 transition-colors"
-                    >
-                      ✅ Approve
-                    </button>
-                    <button
-                      onClick={() => handleReject(designation.id)}
-                      className="px-4 py-2 bg-red-500/20 border border-red-500 text-red-200 rounded-lg hover:bg-red-500/30 transition-colors"
-                    >
-                      ❌ Reject
-                    </button>
-                  </div>
-                </div>
+        {activeTab === 'designations' && (
+          <>
+            {designations.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">✅</div>
+                <p className="text-xl text-gray-300 mb-2">No pending designations</p>
+                <p className="text-sm text-gray-400">All designation requests have been processed</p>
               </div>
-            ))}
-          </div>
+            ) : (
+              <div className="space-y-4">
+                {designations.map((designation) => (
+                  <div
+                    key={designation.id}
+                    className="bg-gray-800/50 border border-yellow-500/30 rounded-xl p-6"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-3xl">⭐</span>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">
+                              {designation.designation_title}
+                            </h3>
+                            {designation.unit && (
+                              <p className="text-sm text-gray-400">{designation.unit}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-xs text-gray-400">Requested by</p>
+                            <p className="text-sm text-white">{designation.user.name}</p>
+                            <p className="text-xs text-gray-400">{designation.user.email}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400">Serial ID</p>
+                            <p className="text-sm font-mono text-white">{designation.user.serial_id}</p>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-gray-500">
+                          Requested: {new Date(designation.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 ml-4">
+                        <button
+                          onClick={() => handleApprove(designation.id, designation.user_id)}
+                          className="px-4 py-2 bg-green-500/20 border border-green-500 text-green-200 rounded-lg hover:bg-green-500/30 transition-colors"
+                        >
+                          ✅ Approve
+                        </button>
+                        <button
+                          onClick={() => handleReject(designation.id)}
+                          className="px-4 py-2 bg-red-500/20 border border-red-500 text-red-200 rounded-lg hover:bg-red-500/30 transition-colors"
+                        >
+                          ❌ Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'achievements' && (
+          <>
+            {achievements.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🏆</div>
+                <p className="text-xl text-gray-300 mb-2">No pending achievements</p>
+                <p className="text-sm text-gray-400">All achievement submissions have been processed</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {achievements.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className="bg-gray-800/50 border border-orange-500/30 rounded-xl p-6"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-3xl">🏆</span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-semibold text-white">
+                                {achievement.title}
+                              </h3>
+                              <span className={`px-2 py-0.5 border rounded text-xs ${getAchievementTypeColor(achievement.type)}`}>
+                                {achievement.type}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-300 mt-1">{achievement.description}</p>
+                          </div>
+                        </div>
+
+                        {achievement.proof_image_url && (
+                          <div className="mb-4">
+                            <img
+                              src={achievement.proof_image_url}
+                              alt="Achievement proof"
+                              className="rounded-lg max-h-48 object-cover"
+                            />
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-xs text-gray-400">Submitted by</p>
+                            <p className="text-sm text-white">{achievement.user.name}</p>
+                            <p className="text-xs text-gray-400">{achievement.user.email}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400">Serial ID</p>
+                            <p className="text-sm font-mono text-white">{achievement.user.serial_id}</p>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-gray-500">
+                          Submitted: {new Date(achievement.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 ml-4">
+                        <button
+                          onClick={() => handleApproveAchievement(achievement.id)}
+                          className="px-4 py-2 bg-green-500/20 border border-green-500 text-green-200 rounded-lg hover:bg-green-500/30 transition-colors"
+                        >
+                          ✅ Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectAchievement(achievement.id)}
+                          className="px-4 py-2 bg-red-500/20 border border-red-500 text-red-200 rounded-lg hover:bg-red-500/30 transition-colors"
+                        >
+                          ❌ Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

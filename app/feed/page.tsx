@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { canPerformAction, getPostAuthorName, getPostAuthorAvatar, getPostAuthorBranch, getUserBadge, getBadgeColor, isOwnerUser } from '@/lib/accessControl';
 import { timeAgo, formatCount, compressImage } from '@/lib/utils';
 import { CldUploadWidget } from 'next-cloudinary';
+import { isGuestSession, getGuestRestrictions } from '@/lib/guestAccess';
 
 interface Post {
   id: string;
@@ -27,11 +28,24 @@ export default function FeedPage() {
   const [postImage, setPostImage] = useState('');
   const [posting, setPosting] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    checkAuth();
-    loadPosts();
-    subscribeToRealtime();
+    // Check if guest session
+    const guestSession = isGuestSession();
+    setIsGuest(guestSession);
+    
+    if (guestSession) {
+      // Guest mode - just load posts
+      setLoading(false);
+      loadPosts();
+      subscribeToRealtime();
+    } else {
+      // Regular auth flow
+      checkAuth();
+      loadPosts();
+      subscribeToRealtime();
+    }
   }, []);
 
   const checkAuth = async () => {
@@ -282,27 +296,48 @@ export default function FeedPage() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">📻</span>
             <h1 className="text-xl font-bold text-white">IET Akashvani</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            {getUserBadge(user) && (
-              <span className={`px-2 py-1 text-xs rounded ${getBadgeColor(getUserBadge(user))}`}>
-                {getUserBadge(user)}
+            {isGuest && (
+              <span className="px-2 py-1 bg-blue-500/20 border border-blue-500 rounded text-xs text-blue-200">
+                👁️ Guest Mode
               </span>
             )}
-            {isOwnerUser(user) && (
-              <Link
-                href="/admin/dashboard"
-                className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-medium"
-                title="Admin Panel"
-              >
-                Admin
-              </Link>
+          </div>
+          <div className="flex items-center gap-3">
+            {!isGuest && (
+              <>
+                {getUserBadge(user) && (
+                  <span className={`px-2 py-1 text-xs rounded ${getBadgeColor(getUserBadge(user))}`}>
+                    {getUserBadge(user)}
+                  </span>
+                )}
+                {isOwnerUser(user) && (
+                  <Link
+                    href="/admin/dashboard"
+                    className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-medium"
+                    title="Admin Panel"
+                  >
+                    Admin
+                  </Link>
+                )}
+                <img
+                  src={user?.profile_pic_url}
+                  alt={user?.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-[#2a2a2a]"
+                />
+              </>
             )}
-            <img
-              src={user?.profile_pic_url}
-              alt={user?.name}
-              className="w-10 h-10 rounded-full object-cover border-2 border-[#2a2a2a]"
-            />
+            {isGuest && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('guest_session');
+                  localStorage.removeItem('guest_login_time');
+                  window.location.href = '/';
+                }}
+                className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
+              >
+                Exit Guest Mode
+              </button>
+            )}
           </div>
         </div>
       </header>
