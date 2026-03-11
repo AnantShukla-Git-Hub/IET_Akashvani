@@ -126,17 +126,42 @@ export default function FeedPage() {
     setPosting(true);
 
     try {
+      // Get current auth user
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (!authUser) {
+        throw new Error('Not authenticated');
+      }
+
+      // Get user profile from database
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', authUser.email)
+        .single();
+
+      if (profileError || !profile) {
+        console.error('Profile error:', profileError);
+        throw new Error('User profile not found');
+      }
+
+      console.log('Creating post with user_id:', profile.id);
+
+      // Create post with correct user_id
       const { error } = await supabase
         .from('posts')
         .insert({
-          user_id: user.id,
+          user_id: profile.id,
           content: newPost.trim(),
           image_url: postImage || null,
           is_anonymous: isAnonymous,
           type: 'feed',
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Post insert error:', error);
+        throw error;
+      }
 
       // Reset form
       setNewPost('');
@@ -147,7 +172,8 @@ export default function FeedPage() {
       await loadPosts();
     } catch (error: any) {
       console.error('Error creating post:', error);
-      alert('Failed to create post');
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      alert(`Failed to create post: ${error.message || 'Unknown error'}`);
     } finally {
       setPosting(false);
     }
