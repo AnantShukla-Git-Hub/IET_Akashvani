@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-
 import { formatYearBranch } from '@/lib/utils';
 
 export default function ProfilePage() {
@@ -11,6 +10,8 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [postsCount, setPostsCount] = useState(0);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
 
   useEffect(() => {
     getProfile();
@@ -39,6 +40,7 @@ export default function ProfilePage() {
         console.error('Error fetching profile:', error);
       } else {
         setProfile(userProfile);
+        setNewName(userProfile.name || '');
         
         // Get posts count
         const { count } = await supabase
@@ -55,9 +57,40 @@ export default function ProfilePage() {
     }
   };
 
+  const handleUpdateName = async () => {
+    if (!newName.trim() || !profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ name: newName.trim() })
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      setProfile({ ...profile, name: newName.trim() });
+      setEditingName(false);
+      alert('Name updated successfully!');
+    } catch (error) {
+      console.error('Error updating name:', error);
+      alert('Failed to update name');
+    }
+  };
+
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
+    if (confirm('Are you sure you want to sign out?')) {
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   if (loading) {
@@ -90,8 +123,8 @@ export default function ProfilePage() {
               className="w-32 h-32 rounded-full object-cover border-4 border-orange-500 mb-4"
             />
           ) : (
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-5xl mb-4">
-              {profile?.name?.charAt(0) || '?'}
+            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-5xl font-bold mb-4">
+              {profile?.name ? getInitials(profile.name) : '?'}
             </div>
           )}
           
@@ -109,8 +142,47 @@ export default function ProfilePage() {
             <h2 className="text-lg font-semibold mb-3 text-orange-500">Basic Information</h2>
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-400">Full Name</p>
-                <p className="text-white">{profile?.name || 'Not set'}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-400">Full Name</p>
+                    {editingName ? (
+                      <div className="flex gap-2 mt-1">
+                        <input
+                          type="text"
+                          value={newName}
+                          onChange={(e) => setNewName(e.target.value)}
+                          className="flex-1 bg-[#0a0a0a] text-white border border-[#2a2a2a] rounded px-3 py-2 text-sm focus:outline-none focus:border-orange-500"
+                          placeholder="Enter your name"
+                        />
+                        <button
+                          onClick={handleUpdateName}
+                          className="px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingName(false);
+                            setNewName(profile?.name || '');
+                          }}
+                          className="px-3 py-2 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-white">{profile?.name || 'Not set'}</p>
+                    )}
+                  </div>
+                  {!editingName && (
+                    <button
+                      onClick={() => setEditingName(true)}
+                      className="ml-3 px-3 py-1 bg-orange-500/20 border border-orange-500 text-orange-200 rounded text-sm hover:bg-orange-500/30"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Email</p>
@@ -185,6 +257,11 @@ export default function ProfilePage() {
               {profile?.badge_override && (
                 <div className="bg-orange-500/20 border border-orange-500 rounded-lg px-3 py-2">
                   <p className="text-sm text-orange-200">⭐ Badge: {profile.badge_override}</p>
+                </div>
+              )}
+              {profile?.is_banned && (
+                <div className="bg-red-500/20 border border-red-500 rounded-lg px-3 py-2">
+                  <p className="text-sm text-red-200">🚫 Account Suspended</p>
                 </div>
               )}
             </div>

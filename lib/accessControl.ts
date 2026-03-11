@@ -56,11 +56,10 @@ export function isOwnerUser(user: any): boolean {
 
 /**
  * Check if user can see anonymous post identities
- * ONLY OWNER can see real identity
- * Everyone else (including Director/Gold badge) sees "Anonymous IETian"
+ * DEPRECATED: No anonymous posting - always shows real names
  */
 export function canSeeAnonymousIdentity(email: string): boolean {
-  return isOwner(email); // ONLY owner, nobody else
+  return true; // Everyone sees real names now
 }
 
 /**
@@ -162,7 +161,7 @@ export function getPermissions(user: any): AccessPermissions {
       canCreateAchievements: true,
       canPromote: true,
       canShareVibes: true,
-      canSeeAnonymousIdentity: true, // ONLY owner
+      canSeeAnonymousIdentity: true, // DEPRECATED: No anonymous posts
       canAccessAllRooms: true, // ONLY owner
       canSeeReports: true, // ONLY owner
       canModerate: true, // ONLY owner
@@ -180,7 +179,7 @@ export function getPermissions(user: any): AccessPermissions {
       canCreateAchievements: false,
       canPromote: false,
       canShareVibes: false,
-      canSeeAnonymousIdentity: false,
+      canSeeAnonymousIdentity: true, // Everyone sees real names
       canAccessAllRooms: false,
       canSeeReports: false,
       canModerate: false,
@@ -198,7 +197,7 @@ export function getPermissions(user: any): AccessPermissions {
       canCreateAchievements: true,
       canPromote: true,
       canShareVibes: true,
-      canSeeAnonymousIdentity: false, // Regular users don't see identity
+      canSeeAnonymousIdentity: true, // Everyone sees real names
       canAccessAllRooms: false, // Regular users only see their rooms
       canSeeReports: false,
       canModerate: false,
@@ -219,7 +218,7 @@ export function getPermissions(user: any): AccessPermissions {
         canCreateAchievements: false,
         canPromote: false,
         canShareVibes: false,
-        canSeeAnonymousIdentity: false,
+        canSeeAnonymousIdentity: true, // Everyone sees real names
         canAccessAllRooms: false,
         canSeeReports: false,
         canModerate: false,
@@ -235,7 +234,7 @@ export function getPermissions(user: any): AccessPermissions {
         canCreateAchievements: false,
         canPromote: false,
         canShareVibes: false,
-        canSeeAnonymousIdentity: false,
+        canSeeAnonymousIdentity: true, // Everyone sees real names
         canAccessAllRooms: false,
         canSeeReports: false,
         canModerate: false,
@@ -251,7 +250,7 @@ export function getPermissions(user: any): AccessPermissions {
         canCreateAchievements: true,
         canPromote: true,
         canShareVibes: true,
-        canSeeAnonymousIdentity: false, // Even full access doesn't see identity
+        canSeeAnonymousIdentity: true, // Everyone sees real names
         canAccessAllRooms: false, // Even full access doesn't access all rooms
         canSeeReports: false,
         canModerate: false,
@@ -267,7 +266,7 @@ export function getPermissions(user: any): AccessPermissions {
         canCreateAchievements: false,
         canPromote: false,
         canShareVibes: false,
-        canSeeAnonymousIdentity: false,
+        canSeeAnonymousIdentity: true, // Everyone sees real names
         canAccessAllRooms: false,
         canSeeReports: false,
         canModerate: false,
@@ -338,66 +337,28 @@ export function getBadgeColor(badge: string | null): string {
 
 /**
  * Get post author display name
- * If anonymous:
- *   - Owner sees real name + "(Anonymous)"
- *   - Everyone else (including Director/Gold) sees "Anonymous IETian"
+ * Always shows real name - no anonymous posting
  */
 export function getPostAuthorName(post: any, currentUser: any): string {
-  // Not anonymous - show real name
-  if (!post.is_anonymous) {
-    return post.user?.name || 'Unknown User';
-  }
-
-  // Anonymous post
-  // ONLY Owner sees real identity
-  if (canSeeAnonymousIdentity(currentUser?.email)) {
-    return `${post.user?.name} (Anonymous)`;
-  }
-
-  // Everyone else (including Director/Gold badge) sees anonymous
-  return 'Anonymous IETian';
+  return post.user?.name || 'Unknown User';
 }
 
 /**
  * Get post author avatar
- * If anonymous and not owner, show generic avatar
+ * Always shows real avatar - no anonymous posting
  */
 export function getPostAuthorAvatar(post: any, currentUser: any): string {
-  // Not anonymous - show real avatar
-  if (!post.is_anonymous) {
-    return post.user?.profile_pic_url || '/default-avatar.png';
-  }
-
-  // Anonymous post
-  // ONLY Owner sees real avatar
-  if (canSeeAnonymousIdentity(currentUser?.email)) {
-    return post.user?.profile_pic_url || '/default-avatar.png';
-  }
-
-  // Everyone else sees generic anonymous avatar
-  return '/anonymous-avatar.png';
+  return post.user?.profile_pic_url || '/default-avatar.png';
 }
 
 import { formatYearBranch } from './utils';
 
 /**
  * Get post author branch display
- * For anonymous posts, show branch but not year
+ * Always shows real year and branch - no anonymous posting
  */
 export function getPostAuthorBranch(post: any, currentUser: any): string {
   const year = post.user?.year;
   const branch = post.user?.branch;
-
-  // Owner sees everything
-  if (canSeeAnonymousIdentity(currentUser?.email)) {
-    return formatYearBranch(year, branch);
-  }
-
-  // Anonymous - show only branch
-  if (post.is_anonymous) {
-    return branch || 'IET Student';
-  }
-
-  // Regular post - show year + branch
   return formatYearBranch(year, branch);
 }

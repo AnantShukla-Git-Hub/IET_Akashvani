@@ -61,10 +61,17 @@ export default function AdminReportsPage() {
   };
 
   const handleDismiss = async (reportId: string) => {
+    const reason = prompt('Enter dismissal reason (optional):');
+    if (!confirm('Are you sure you want to dismiss this report?')) return;
+
     try {
       const { error } = await supabase
         .from('reports')
-        .update({ status: 'dismissed' })
+        .update({ 
+          status: 'dismissed',
+          dismissed_at: new Date().toISOString(),
+          dismissal_reason: reason || 'Dismissed by admin',
+        })
         .eq('id', reportId);
 
       if (error) throw error;
@@ -78,8 +85,7 @@ export default function AdminReportsPage() {
   };
 
   const handleTakeAction = async (reportId: string, postId: string) => {
-    const action = confirm('Delete the reported post?');
-    if (!action) return;
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
 
     try {
       // Delete the post
@@ -93,7 +99,11 @@ export default function AdminReportsPage() {
       // Update report status
       const { error: reportError } = await supabase
         .from('reports')
-        .update({ status: 'action_taken' })
+        .update({ 
+          status: 'action_taken',
+          action_taken_at: new Date().toISOString(),
+          action_description: 'Post deleted by admin',
+        })
         .eq('id', reportId);
 
       if (reportError) throw reportError;

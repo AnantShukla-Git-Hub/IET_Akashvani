@@ -59,9 +59,11 @@ export default function AdminBadgesPage() {
   const handleApprove = async (designationId: string, userId: string) => {
     const badgeLevel = prompt('Enter badge level (gold/silver/bronze):');
     if (!badgeLevel || !['gold', 'silver', 'bronze'].includes(badgeLevel.toLowerCase())) {
-      alert('Invalid badge level');
+      alert('Invalid badge level. Please enter: gold, silver, or bronze');
       return;
     }
+
+    if (!confirm(`Approve this designation with ${badgeLevel} badge?`)) return;
 
     try {
       // Update designation status
@@ -95,6 +97,7 @@ export default function AdminBadgesPage() {
   };
 
   const handleReject = async (designationId: string) => {
+    const reason = prompt('Enter rejection reason (optional):');
     if (!confirm('Are you sure you want to reject this designation?')) return;
 
     try {
@@ -102,6 +105,8 @@ export default function AdminBadgesPage() {
         .from('designations')
         .update({
           status: 'rejected',
+          rejected_at: new Date().toISOString(),
+          rejection_reason: reason || 'Rejected by admin',
         })
         .eq('id', designationId);
 

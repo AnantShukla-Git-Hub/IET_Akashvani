@@ -12,7 +12,6 @@ interface Post {
   user_id: string;
   content: string;
   image_url?: string;
-  is_anonymous: boolean;
   created_at: string;
   user?: any;
   likes_count?: number;
@@ -25,7 +24,6 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [postImage, setPostImage] = useState('');
   const [posting, setPosting] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
@@ -53,6 +51,13 @@ export default function FeedPage() {
     if (!dbUser) {
       window.location.href = '/setup';
       return;
+    }
+
+    // Check if user is banned
+    if (dbUser.is_banned) {
+      setUser(dbUser); // Set user for banned screen
+      setLoading(false);
+      return; // Don't load posts or continue
     }
 
     setUser(dbUser);
@@ -155,7 +160,7 @@ export default function FeedPage() {
           user_id: profile.id,
           content: newPost.trim(),
           image_url: postImage || null,
-          is_anonymous: isAnonymous,
+          is_anonymous: false, // Always false - no anonymous posts
           type: 'feed',
         });
 
@@ -167,7 +172,6 @@ export default function FeedPage() {
       // Reset form
       setNewPost('');
       setPostImage('');
-      setIsAnonymous(false);
       
       // Reload posts
       await loadPosts();
@@ -235,6 +239,41 @@ export default function FeedPage() {
     );
   }
 
+  // Show banned user screen
+  if (user?.is_banned) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-8xl mb-6">🚫</div>
+          <h1 className="text-3xl font-bold text-red-400 mb-4">Account Suspended</h1>
+          <p className="text-gray-300 mb-6">
+            Your account has been suspended by the administrators. 
+            If you believe this is a mistake, please contact support.
+          </p>
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+            <p className="text-sm text-red-300">
+              <strong>Reason:</strong> {user.blocked_reason || 'Violation of community guidelines'}
+            </p>
+            {user.blocked_at && (
+              <p className="text-sm text-red-300 mt-2">
+                <strong>Date:</strong> {new Date(user.blocked_at).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = '/';
+            }}
+            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] pb-20">
       {/* Header */}
@@ -274,7 +313,7 @@ export default function FeedPage() {
         <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 mb-6">
           <div className="flex gap-3">
             <img
-              src={isAnonymous ? '/anonymous-avatar.png' : user?.profile_pic_url}
+              src={user?.profile_pic_url}
               alt="Avatar"
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -282,7 +321,7 @@ export default function FeedPage() {
               <textarea
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
-                placeholder={isAnonymous ? "Post as Anonymous IETian..." : "What's on your mind?"}
+                placeholder="What's on your mind?"
                 className="w-full bg-[#0a0a0a] text-white border border-[#2a2a2a] rounded-lg px-4 py-3 resize-none focus:outline-none focus:border-orange-500"
                 rows={3}
                 maxLength={500}
@@ -321,16 +360,6 @@ export default function FeedPage() {
                       </button>
                     )}
                   </CldUploadWidget>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isAnonymous}
-                      onChange={(e) => setIsAnonymous(e.target.checked)}
-                      className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
-                    />
-                    <span className="text-sm text-gray-400">Post as Anonymous IETian</span>
-                  </label>
                 </div>
 
                 <div className="flex items-center gap-3">
